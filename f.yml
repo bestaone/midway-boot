@@ -1,0 +1,13 @@
+service:
+  name: midway_boot
+
+provider:
+  name: aliyun
+
+deployType:
+  type: koa
+  version: 3.0.0
+
+custom:
+  customDomain:
+    domainName: auto  # auto:需要使用自动域名
