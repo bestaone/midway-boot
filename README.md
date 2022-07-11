@@ -64,17 +64,17 @@ midway-boot是基于阿里巴巴前端框架Midway构建的一套快速启动的
 
 - 登陆接口
 <p align="center">
-  <img width="900" src="https://gitee.com/bestaone/midway-boot/raw/master/doc/img/1-1.png">
+  <img width="900" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/img/1-1.png">
 </p>
 
 - 设置访问凭证
 <p align="center">
-  <img width="900" src="https://gitee.com/bestaone/midway-boot/raw/master/doc/img/1-2.png">
+  <img width="900" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/img/1-2.png">
 </p>
 
 - 验证接口
 <p align="center">
-  <img width="900" src="https://gitee.com/bestaone/midway-boot/raw/master/doc/img/1-3.png">
+  <img width="900" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/img/1-3.png">
 </p>
 
 ## 快速启动
@@ -165,7 +165,7 @@ custom:
 
 ## 社区与作者
 <p align="center">
-  <img width="900" src="https://gitee.com/bestaone/midway-boot/raw/master/doc/img/community_wechat.jpg">
+  <img width="900" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/img/community_wechat.jpg">
 </p>
 
 
