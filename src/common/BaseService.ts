@@ -55,7 +55,7 @@ export abstract class BaseService<T extends BaseEntity> {
 
   async limit(where: FindOptionsWhere<T>, skip: number, take: number): Promise<T[]> {
     Assert.notNull(where, ErrorCode.UN_ERROR, '查询参数不能为空');
-    Assert.notNull(skip != null && skip > 0, ErrorCode.UN_ERROR, 'skip不能为空');
+    Assert.notNull(skip != null && skip >= 0, ErrorCode.UN_ERROR, 'skip不能为空');
     Assert.notNull(take != null && take > 0, ErrorCode.UN_ERROR, 'take不能为空');
     Assert.notNull(0 < take && take < 1000, ErrorCode.UN_ERROR, 'take应大于0，小于1000');
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
