@@ -2,7 +2,8 @@ service:
   name: midway_boot
 
 provider:
-  name: aliyun
+  name: aliyun          # aliyun(cn-zhangjiakou)、tencent(ap-shanghai)
+  region: cn-zhangjiakou
 
 deployType:
   type: koa
