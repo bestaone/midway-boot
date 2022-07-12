@@ -2,10 +2,12 @@
 <h1 align="center">midway-boot</h1>
 <div align="center">
 
-midway-boot是基于阿里巴巴前端框架Midway构建的一套快速启动的Nodejs服务端项目模板，这里提供了常用功能的最佳实践，帮助你快速启动一个基于Nodejs的服务端项目。
+midway-boot是基于阿里巴巴后端框架Midway构建的一套快速启动的Nodejs服务端项目模板，这里提供了常用功能的最佳实践，帮助你快速启动一个基于Nodejs的服务端项目。
 
-[![Language](https://img.shields.io/badge/%E8%AF%AD%E8%A8%80-Typescript%20%7C%20Nodejs-red?style=flat-square&color=42b883)](https://github.com/bestaone/midway-boot)
-[![License](https://img.shields.io/github/license/bestaone/HiAuth?color=42b883&style=flat-square)](https://github.com/bestaone/HiAuth/blob/master/LICENSE)
+[![Star](https://img.shields.io/github/stars/bestaone/midway-boot?color=42b883&logo=github&style=flat-square)](https://github.com/bestaone/midway-boot/stargazers)
+[![Fork](https://img.shields.io/github/forks/bestaone/midway-boot?color=42b883&logo=github&style=flat-square)](https://github.com/bestaone/midway-boot/network/members)
+[![Language](https://img.shields.io/badge/%E8%AF%AD%E8%A8%80-TypeScript%20%7C%20Nodejs-red?style=flat-square&color=42b883)](https://github.com/bestaone/midway-boot)
+[![License](https://img.shields.io/github/license/bestaone/midway-boot?color=42b883&style=flat-square)](https://github.com/bestaone/midway-boot/blob/main/LICENSE)
 [![Author](https://img.shields.io/badge/作者-Earven-orange.svg)](https://github.com/bestaone)
 
 </div>
@@ -86,7 +88,7 @@ midway-boot是基于阿里巴巴前端框架Midway构建的一套快速启动的
 - Redis
 
 ### 下载源码
-```
+```bash
 >git clone https://github.com/bestaone/midway-boot.git
 ```
 
@@ -109,7 +111,6 @@ REDIS_PORT=6379         # 你的redis端口
 #### 构建、启动
 ```bash
 # 按顺序执行
-
 >cd midway-boot
 >npm install       # 安装依赖
 >npm run test      # 运行单元测试，这过程会检查mysql、redis是否配置正确
@@ -122,11 +123,13 @@ REDIS_PORT=6379         # 你的redis端口
 - 访问Swagger：http://127.0.0.1:7001/swagger-ui/index.html
 
 ## 开发调试
-
-以idea为例
+以IntelliJ IDEA为例：
 - 导入项目代码；
 - 终端中运行 “npm install” 安装依赖；
 - 运行/调试配置；
+<p align="center">
+  <img width="900" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/img/2-1.png">
+</p>
 
 ## 部署
 
@@ -137,7 +140,7 @@ REDIS_PORT=6379         # 你的redis端口
 >docker run -d --name midway-boot -p 17001:7001 --env-file /opt/.env midway-boot:v1.0
 ```
 
-### Serverlessw
+### Serverless
 
 - 开通阿里云函数服务并设置，参考：
 http://www.midwayjs.org/docs/serverless/serverless_dev
@@ -158,10 +161,11 @@ custom:
 ```
 
 - 测试
+
 使用阿里云自动分配的域名访问Swagger进行验证
 
 ## 授权协议
-本项目执行 [MIT](https://github.com/bestaone/HiAuth/blob/master/LICENSE) 协议
+本项目执行 [MIT](https://github.com/bestaone/midway-boot/blob/main/LICENSE) 协议
 
 ## 社区与作者
 <p align="center">
