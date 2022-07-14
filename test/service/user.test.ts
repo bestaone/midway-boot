@@ -41,7 +41,7 @@ describe('test/service/user.test.ts', () => {
       regtime: new Date(),
     });
     await service.save(o);
-    Assert.notNull(o.id, ErrorCode.UN_ERROR, '创建用户失败');
+    Assert.notEmpty(o.id, ErrorCode.UN_ERROR, '创建用户失败');
 
     // find
     o = await service.findById(o.id);
