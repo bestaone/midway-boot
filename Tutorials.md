@@ -305,6 +305,7 @@ export class UserController {
   }
 }
 ```
+- `@Inject()`装饰类指定该对象会被自动注入；
 
 #### 添加单元测试
 添加文件`test/controller/user.test.ts`
@@ -930,11 +931,370 @@ export class SnowflakeIdGenerate {
 >npm i bcryptjs --save
 ```
 
+#### 添加工具类`src/utils/PasswordEncoder.ts`
+```typescript
+// src/utils/PasswordEncoder.ts
+const bcrypt = require('bcryptjs');
+
+/**
+ * 加密。加上前缀{bcrypt}，为了兼容多种加密算法，这里暂时只实现bcrypt算法
+ */
+export function encrypt(password) {
+  const salt = bcrypt.genSaltSync(5);
+  const hash = bcrypt.hashSync(password, salt, 64);
+  return '{bcrypt}' + hash;
+}
+
+/**
+ * 解密
+ */
+export function decrypt(password, hash) {
+  if (hash.indexOf('{bcrypt}') === 0) {
+    hash = hash.slice(8);
+  }
+  return bcrypt.compareSync(password, hash);
+}
+```
+
+### 断言工具
+```typescript
+// src/common/Assert.ts
+import { CommonException } from './CommonException';
+
+export class Assert {
+  /**
+   * 不为空断言
+   */
+  static notNull(obj: any, errorCode: number, errorMsg: string) {
+    if (!obj) {
+      throw new CommonException(errorCode, errorMsg);
+    }
+  }
+
+  /**
+   * 空字符串断言
+   */
+  static notEmpty(obj: any, errorCode: number, errorMsg: string) {
+    if (!obj || '' === obj.trim()) {
+      throw new CommonException(errorCode, errorMsg);
+    }
+  }
+
+  /**
+   * 布尔断言
+   */
+  static isTrue(expression: boolean, errorCode: number, errorMsg: string) {
+    if (!expression) {
+      throw new CommonException(errorCode, errorMsg);
+    }
+  }
+
+}
+```
+
 ## 接口安全认证
-### jwt
-### Bearer
-### 参数验证组件
-### 接口访问状态
+很多时候，后端接口需要登录后才能进行访问，甚至有的接口需要拥有相应的权限才能访问。
+这里实现`bearer`验证方式（bearerFormat 为 JWT）。
+
+### 安装JWT组件
+```base
+>npm i @midwayjs/jwt@3 --save
+>npm i @types/jsonwebtoken --save-dev
+```
+安装完后`package.json`文件中会多出如下配置
+```json
+{
+  "dependencies": {
+    "@midwayjs/jwt": "^3.3.11"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.8"
+  }
+}
+```
+### 添加JWT配置
+修改`src/config/config.default.ts`，添加如下内容：
+```bash
+// src/config/config.default.ts
+jwt: {
+  secret: 'setscrew',
+  expiresIn: 60 * 60 * 24,
+}
+```
+
+### 安装Redis组件
+```base
+>npm i @midwayjs/redis@3 --save
+>npm i @types/ioredis --save-dev
+```
+安装完后`package.json`文件中会多出如下配置
+```json
+{
+  "dependencies": {
+    "@midwayjs/redis": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/ioredis": "^4.28.7"
+  }
+}
+```
+
+### 添加配置
+修改`src/config/config.default.ts`，添加如下内容：
+#### 添加Redis配置
+```bash
+// src/config/config.default.ts
+redis: {
+  client: {
+    host: 127.0.0.1,
+    port: 6379,
+    db: 0,
+  },
+}
+```
+#### 添加安全拦截配置
+```bash
+app: {
+  security: {
+    prefix: '/api',         # 指定已/api开头的接口地址需要拦截
+    ignore: ['/api/login'], # 指定该接口地址，不需要拦截
+  },
+}
+```
+
+### 添加接口安全拦截中间件
+
+#### 添加常量定义
+```typescript
+// src/common/Constant.ts
+export class Constant {
+  // 登陆验证时，缓存用户登陆状态KEY的前缀
+  static TOKEM = 'TOKEN';
+}
+```
+
+#### 添加用户访问上下文接口
+```typescript
+// src/common/UserContext.ts
+/**
+ * 登陆后存储访问上下文的状态数据，同时也会存在redis缓存中
+ */
+export class UserContext {
+  userId: number;
+  username: string;
+  phoneNum: string;
+  constructor(userId: number, username: string, phoneNum: string) {
+    this.userId = userId;
+    this.username = username;
+    this.phoneNum = phoneNum;
+  }
+}
+```
+
+#### 新增或者编辑`src/interface.ts`，将`UserContext`注册到`ApplecationContext`中。
+```typescript
+// src/interface.ts
+import '@midwayjs/core';
+import { UserContext } from './common/UserContext';
+
+declare module '@midwayjs/core' {
+  interface Context {
+    userContext: UserContext;
+  }
+}
+```
+
+#### 新增中间件`src/middleware/security.middleware.ts`
+```typescript
+// src/middleware/security.middleware.ts
+import { Config, Inject, Middleware } from '@midwayjs/decorator';
+import { Context, NextFunction } from '@midwayjs/koa';
+import { httpError } from '@midwayjs/core';
+import { JwtService } from '@midwayjs/jwt';
+import { UserContext } from '../common/UserContext';
+import { RedisService } from '@midwayjs/redis';
+import { Constant } from '../common/Constant';
+
+/**
+ * 安全验证
+ */
+@Middleware()
+export class SecurityMiddleware {
+
+  @Inject()
+  jwtUtil: JwtService;
+
+  @Inject()
+  cacheUtil: RedisService;
+
+  @Config('app.security')
+  securityConfig;
+
+  resolve() {
+    return async (ctx: Context, next: NextFunction) => {
+      if (!ctx.headers['authorization']) {
+        throw new httpError.UnauthorizedError('缺少凭证');
+      }
+      const parts = ctx.get('authorization').trim().split(' ');
+      if (parts.length !== 2) {
+        throw new httpError.UnauthorizedError('无效的凭证');
+      }
+      const [scheme, token] = parts;
+      if (!/^Bearer$/i.test(scheme)) {
+        throw new httpError.UnauthorizedError('缺少Bearer');
+      }
+      // 验证token，过期会抛出异常
+      const jwt = await this.jwtUtil.verify(token, { complete: true });
+      // jwt中存储的user信息
+      const payload = jwt['payload'];
+      const key = Constant.TOKEM + ':' + payload.userId + ':' + token;
+      const ucStr = await this.cacheUtil.get(key);
+      // 服务器端缓存中存储的user信息
+      const uc: UserContext = JSON.parse(ucStr);
+      if (payload.username !== uc.username) {
+        throw new httpError.UnauthorizedError('无效的凭证');
+      }
+      // 存储到访问上下文中
+      ctx.userContext = uc;
+      return next();
+    };
+  }
+
+  public match(ctx: Context): boolean {
+    const { path } = ctx;
+    const { prefix, ignore } = this.securityConfig;
+    const exist = ignore.find((item) => {
+      return item.match(path);
+    });
+    return path.indexOf(prefix) === 0 && !exist;
+  }
+
+  public static getName(): string {
+    return 'SECURITY';
+  }
+
+}
+```
+- `@Config('app.security')`装饰类，指定加载配置文件`src/config/config.**.ts`中对应的配置信息；
+- 使用`jwtUtil`进行JWT编码校验；
+> jwt token 将用户信息编码在token中，解码后可以获取对应用户数据，通常情况下，不需要存储到redis中；
+> 但是有个缺点就是，不能人为控制分发出去的token失效。所以有时人们会使用缓存中的用户信息；
+> 这里使用了JWT+Redis的方式，是为了演示两种做法；
+
+#### 添加登陆接口
+- 添加DTO;
+```typescript
+// src/api/dto/CommonDTO.ts
+export class LoginDTO {
+  username: string;
+  password: string;
+}
+```
+- 添加VO;
+```typescript
+// src/api/vo/CommonVO.ts
+export class LoginVO {
+  accessToken: string;
+  expiresIn: number;
+}
+```
+
+- 修改`src/service/user.service.ts`，添加通过用户名查找用户接口；
+```typescript
+import { Provide } from '@midwayjs/decorator';
+import { User } from '../eneity/user';
+import { InjectEntityModel } from '@midwayjs/orm';
+import { Repository } from 'typeorm';
+import { BaseService } from '../common/BaseService';
+
+@Provide()
+export class UserService extends BaseService<User> {
+
+  @InjectEntityModel(User)
+  model: Repository<User>;
+
+  getModel(): Repository<User> {
+    return this.model;
+  }
+
+  async findByUsername(username: string): Promise<User> {
+    return this.model.findOne({ where: { username } });
+  }
+
+}
+```
+
+- 添加Controller`src/controller/common.controller.ts`；
+```typescript
+// src/controller/common.controller.ts
+import { Body, Config, Controller, Inject, Post } from '@midwayjs/decorator';
+import { Context } from '@midwayjs/koa';
+import { UserService } from '../service/user.service';
+import { RedisService } from '@midwayjs/redis';
+import { LoginDTO } from '../api/dto/CommonDTO';
+import { LoginVO } from '../api/vo/CommonVO';
+import { SnowflakeIdGenerate } from '../utils/Snowflake';
+import { JwtService } from '@midwayjs/jwt';
+import { Assert } from '../common/Assert';
+import { ErrorCode } from '../common/ErrorCode';
+import { UserContext } from '../common/UserContext';
+import { Constant } from '../common/Constant';
+import { ILogger } from '@midwayjs/core';
+import { decrypt } from '../utils/PasswordEncoder';
+import { Validate } from '@midwayjs/validate';
+import { ApiResponse, ApiTags } from '@midwayjs/swagger';
+
+@ApiTags(['common'])
+@Controller('/api')
+export class CommonController {
+
+  @Inject()
+  logger: ILogger;
+
+  @Inject()
+  ctx: Context;
+
+  @Inject()
+  userService: UserService;
+
+  @Inject()
+  cacheUtil: RedisService;
+
+  @Inject()
+  jwtUtil: JwtService;
+
+  @Inject()
+  idGenerate: SnowflakeIdGenerate;
+
+  @Config('jwt')
+  jwtConfig;
+
+  @ApiResponse({ type: LoginVO })
+  @Validate()
+  @Post('/login', { description: '登陆' })
+  async login(@Body() body: LoginDTO): Promise<LoginVO> {
+    const user = await this.userService.findByUsername(body.username);
+    Assert.notNull(user, ErrorCode.UN_ERROR, '用户名或者密码错误');
+    const flag = decrypt(body.password, user.password);
+    Assert.isTrue(flag, ErrorCode.UN_ERROR, '用户名或者密码错误');
+    const uc: UserContext = new UserContext(user.id, user.username, user.phoneNum);
+    const at = await this.jwtUtil.sign({ ...uc });
+    const key = Constant.TOKEM + ':' + user.id + ':' + at;
+    const expiresIn = this.jwtConfig.expiresIn;
+    this.cacheUtil.set(key, JSON.stringify(uc), 'EX', expiresIn);
+    const vo = new LoginVO();
+    vo.accessToken = at;
+    vo.expiresIn = expiresIn;
+    return vo;
+  }
+
+}
+```
+
+#### 使用Postman验证
+- 使用登陆接口获取token
+- 调用接口（未设置凭证）
+- 调用接口（使用凭证）
 
 ## Swagger集成
 
