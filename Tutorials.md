@@ -1445,6 +1445,7 @@ export class ContainerLifeCycle {
 <div align="center">
   <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-1.png">
 </div>
+
 #### 测试接口
 验证接口，提示`缺少凭证`，需要Swagger支持`bearer`验证
 <div align="center">
@@ -1454,6 +1455,7 @@ export class ContainerLifeCycle {
 #### 添加`bearer`支持
 - Swagger支持bearer验证，添加配置；
 ```
+// src/config/config.default.ts
 swagger: {
   auth: {
     authType: 'bearer',
@@ -1462,6 +1464,7 @@ swagger: {
 ```
 - 在对应Controller中添加注解`@ApiBearerAuth()`；
 ```
+// src/controller/user.controller.ts
 @ApiBearerAuth()
 @Controller('/api/user')
 export class UserController extends BaseController<User> {
