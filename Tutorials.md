@@ -1,8 +1,9 @@
 
-## 课程简介
+## 一、课程简介
 midway是阿里巴巴开源的，基于TypeScript语言开发的Nodejs后端框架。
+本教程指导大家从0开始搭建一个midway项目。
 
-#### 其遵循遵循两种编程范式：
+#### 其遵循遵循两种编程范式
 - 面向对象（OOP + Class + IoC）；
 - 函数式（FP + Function + Hooks）；
 
@@ -10,9 +11,31 @@ midway是阿里巴巴开源的，基于TypeScript语言开发的Nodejs后端框�
 - 懂Nodejs技术的前端开发；
 - 会TypeScript的后端开发；
 
-## midway、midway-boot介绍
+#### 在这里你可以掌握度如下知识
 
-## 环境准备
+- 面向对象的开发体验；
+- 增删改查及基类封装；
+- 数据库操作；
+- 缓存操作；
+- 用户安全认证及访问安全控制；
+- JWT访问凭证；
+- 分布式访问状态管理；
+- 密码加解密；
+- 统一返回结果封装；
+- 统一异常管理；
+- Snowflake主键生成；
+- Swagger集成及支持访问认证；
+- 环境变量的使用；
+- Docker镜像构建；
+- Serverless发布；
+
+#### 本项目源码
+https://github.com/bestaone/midway-boot
+
+#### LIVE DEMO
+http://midway-boot.hiauth.cn/swagger-ui/index.html
+
+## 二、环境准备
 
 - Nodejs 12+
 - Npm 8+
@@ -23,9 +46,11 @@ midway是阿里巴巴开源的，基于TypeScript语言开发的Nodejs后端框�
 我们这里使用 IntelliJ IDEA
 >下载地址：https://www.jetbrains.com/zh-cn/idea/download
 
-### 安装数据库、Redis
+### 安装数据库
 
-## 第一个midway标准项目
+### 安装Redis
+
+## 三、第一个midway项目
 #### 初始化创建
 ```bash
 >npm init midway
@@ -40,6 +65,7 @@ midway是阿里巴巴开源的，基于TypeScript语言开发的Nodejs后端框�
 >启动后浏览器访问：http://127.0.0.1:7001
 
 #### 调整ESLint配置
+为了保证代码分隔统一，我们调整下ESLint配置
 ```typescript
 // .prettierrc.js
 module.exports = {
@@ -50,6 +76,7 @@ module.exports = {
   semi: true,             // 行尾需要有分号
 }
 ```
+>在windows中代码的首行、尾行不能有空行，否则ESLint提示格式错误，可能是bug。
 
 ### 项目结构介绍
 ```
@@ -68,8 +95,8 @@ module.exports = {
 ├─tsconfig.json           # TypeScript 编译配置文件
 ```
 
-## 增删改查
-### ORM模块TypeORM
+## 四、增删改查
+### ORM组件：TypeORM
 TypeORM是Object Relation Mapping工具，提供的数据库操作能力。
 #### 安装依赖
 ```bash
@@ -157,7 +184,9 @@ export default {
   }
 }
 ```
+> orm的详细文档见：http://www.midwayjs.org/docs/extensions/orm
 
+### Entity、Service、Controller
 #### 创建Entity实体类
 - 创建目录`src/entity`;
 - 在该目录下创建实体类`user.ts`;
@@ -307,7 +336,8 @@ export class UserController {
 ```
 - `@Inject()`装饰类指定该对象会被自动注入；
 
-#### 添加单元测试
+### 单元测试
+#### 添加单元测试类
 添加文件`test/controller/user.test.ts`
 ```typescript
 // test/controller/user.test.ts
@@ -392,17 +422,33 @@ module.exports = {
 };
 ```
 
-#### IntelliJ IDEA中Debug
+### 开发调试
+
+### IntelliJ IDEA中Debug
 - 运行/调试配置
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/1-1.png">
+  </div>
 - 启动Debug
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/1-2.png">
+  </div>
 
 #### 使用Postman测试
 - 新增
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/2-1.png">
+  </div>
 - 查找
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/2-2.png">
+  </div>
 - 删除
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/2-3.png">
+  </div>
 
-## 封装增删改查
-
+## 五、封装增删改查
 ### 问题
 - 大多数情况，所有实体类都有统一字段，需要抽取实体模型的基类；
 - 需要将Service的基本操作封装起来；
@@ -632,7 +678,7 @@ Snapshots:   0 total
 Time:        10.686 s
 ```
 
-## 统一返回结果处理
+## 六、统一返回结果处理
 
 ### 中间件
 web中间件是在控制器调用`之前`和`之后`调用的函数方法，我们可以利用中间件在接口执行前或者后，加一些逻辑。
@@ -678,7 +724,6 @@ export class CommonException extends MidwayError {
 }
 ```
 
-
 ### 使用中间件统一接口返回数据格式
 #### 添加中间件`src/middleware/format.middleware.ts`
 ```typescript
@@ -709,6 +754,7 @@ export class FormatMiddleware implements IMiddleware<Context, NextFunction> {
   }
 }
 ```
+- `@Middleware()`标识此类是一个中间件；
 - `match(ctx)`方法确定哪些路径会被拦截；
 >详细的中间件使用说明见：http://www.midwayjs.org/docs/middleware
 
@@ -749,10 +795,12 @@ export class ContainerLifeCycle {
 
 #### Postman查看返回结果
 此时返回结果已经被重新包装了。
-图3-1
+<div align="center">
+  <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/3-1.png">
+</div>
 
 #### 异常处理
-统一的异常处理使用异常过滤去，可以在这里进行异常的封装处理。
+统一的异常处理使用异常过滤器，可以在这里进行异常的封装处理。
 - 创建或者修改异常过滤器`src/filter/default.filter.ts`;
 ```typescript
 // src/filter/default.filter.ts
@@ -828,7 +876,9 @@ export class ContainerLifeCycle {
 }
 ```
 - 使用Postman验证（创建用户，输入一个过长的用户名）；
-图3-2
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/3-2.png">
+  </div>
 
 #### 单元测试
 由于调整了返回值，此时单元测试会报错，我们需要调整下单元。修改`test/controller/user.test.ts`。
@@ -847,17 +897,18 @@ Time:        6.525 s, estimated 9 s
 
 ```
 
-## 工具类
+## 七、工具类
 ### 问题&需求
 - 数据库主键需要是一个有序的、全局唯一的长整形；
 - 用户的密码需要加密存储，能够验证密码；
+- 业务异常需要需要返回给前端，这里使用`断言工具`；
 
 ### 主键生成器
 我们使用Snowflake主键生成算法。
 其优点是：高性能，低延迟；独立的应用；按时间有序。
 缺点是：需要独立的开发和部署。
 我们这里把算法迁移到本地，测试开发没有问题，生产使用需要配置数据中心和服务器。
-- 创建工具目录`util`;
+- 创建工具目录`utils`;
 - 创建工具类`src/utils/Snowflake.ts`;
 ```typescript
 // src/utils/Snowflake.ts
@@ -1009,7 +1060,7 @@ export class Assert {
 }
 ```
 
-## 接口安全认证
+## 八、接口安全认证
 很多时候，后端接口需要登录后才能进行访问，甚至有的接口需要拥有相应的权限才能访问。
 这里实现`bearer`验证方式（bearerFormat 为 JWT）。
 
@@ -1038,7 +1089,7 @@ jwt: {
   expiresIn: 60 * 60 * 24,
 }
 ```
-- 添加`JWT`配置；
+- 注册`JWT`组件；
 ```typescript
 // src/configuration.ts
 import * as jwt from '@midwayjs/jwt';
@@ -1053,6 +1104,7 @@ export class ContainerLifeCycle {
     //...
 }
 ```
+> 关于JWT的详细使用文档，见：http://www.midwayjs.org/docs/extensions/jwt
 
 ### 安装Redis组件
 ```base
@@ -1100,9 +1152,11 @@ redis: {
   },
 }
 ```
+> 关于Redis的详细使用文档，见：http://www.midwayjs.org/docs/extensions/redis
 
 #### 添加安全拦截配置
 ```bash
+// src/config/config.default.ts
 app: {
   security: {
     prefix: '/api',         # 指定已/api开头的接口地址需要拦截
@@ -1122,7 +1176,7 @@ export class Constant {
 }
 ```
 
-#### 添加用户访问上下文接口
+#### 添加用户访问上下文类
 ```typescript
 // src/common/UserContext.ts
 /**
@@ -1140,7 +1194,7 @@ export class UserContext {
 }
 ```
 
-#### 新增或者编辑`src/interface.ts`，将`UserContext`注册到`ApplecationContext`中。
+#### 新增或者编辑`src/interface.ts`，将`UserContext`注册到`ApplecationContext`中
 ```typescript
 // src/interface.ts
 import '@midwayjs/core';
@@ -1225,9 +1279,9 @@ export class SecurityMiddleware {
 }
 ```
 - `@Config('app.security')`装饰类，指定加载配置文件`src/config/config.**.ts`中对应的配置信息；
-- 使用`jwtUtil`进行JWT编码校验；
-> jwt token 将用户信息编码在token中，解码后可以获取对应用户数据，通常情况下，不需要存储到redis中；
-> 但是有个缺点就是，不能人为控制分发出去的token失效。所以有时人们会使用缓存中的用户信息；
+- 使用`JwtService`进行JWT编码校验；
+> `jwt token`将用户信息编码在token中，解码后可以获取对应用户数据，通常情况下，不需要存储到redis中；
+> 但是有个缺点就是，不能人为控制分发出去的token失效。所以，有时人们会使用缓存中的用户信息；
 > 这里使用了JWT+Redis的方式，是为了演示两种做法；
 
 #### 注册中间件
@@ -1347,11 +1401,20 @@ export class CommonController {
 ```
 
 #### 使用Postman验证
-- 调用接口（未设置凭证）
-- 使用登陆接口获取token
-- 调用接口（使用凭证）
+- 调用接口（未设置凭证）；
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/4-1.png">
+  </div>
+- 使用登陆接口获取token；
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/4-2.png">
+  </div>
+- 调用接口（使用凭证）；
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/4-3.png">
+  </div>
 
-## Swagger集成
+## 九、Swagger集成
 Swagger是一个集成在系统内部，能够通过装饰类描述接口文档的工具，可以方便的测试接口
 
 ### 安装组件
@@ -1377,11 +1440,18 @@ export class ContainerLifeCycle {
 ```
 
 ### 验证
-#### 访问：http://127.0.0.1:7001/swagger-ui/index.html；
-图5-1
-#### 验证接口，提示`缺少凭证`，需要Swagger支持`bearer`验证；
-图5-2
+#### Swagger UI 页面
+访问：http://127.0.0.1:7001/swagger-ui/index.html
+<div align="center">
+  <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-1.png">
+</div>
+#### 测试接口
+验证接口，提示`缺少凭证`，需要Swagger支持`bearer`验证
+<div align="center">
+  <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-2.png">
+</div>
 
+#### 添加`bearer`支持
 - Swagger支持bearer验证，添加配置；
 ```
 swagger: {
@@ -1398,22 +1468,37 @@ export class UserController extends BaseController<User> {
   // ...
 }
 ```
-- 再访问Swagger，就出现了Authorize按钮；图5-3
+- 再访问Swagger，就出现了Authorize按钮；
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-3.png">
+  </div>
 - 使用登陆接口，获取accessToken，进行认证，便可以访问相关接口了；
-  图5-4
-  图5-5
-  图5-6
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-4.png">
+  </div>
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-5.png">
+  </div>
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-6.png">
+  </div>
 
 ### Swagger常用装饰类
 - `@ApiTags()`通常用于`Controller`，将其分类标记；
 - `@ApiResponse()`用于标注API的返回值；
 - `@ApiProperty()`用于标注返回DTO、VO，实体类的属性；
 - 调整相关代码`common.controller.ts`、`user.controller.ts`、`user.ts`、`CommonDTO.ts`、`CommonVO.ts`、`BaseEntity.ts`；
-图5-7
-图5-8
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-7.png">
+  </div>
+  <div align="center">
+    <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-8.png">
+  </div>
 
-## 环境变量
-通常我们不希望将生产环境的相关配置写在项目代码中，而希望在不同的环境中启动，自动读取环境中设置的配置；
+> 关于Swagger的详细使用文档，见：http://www.midwayjs.org/docs/extensions/swagger
+
+## 十、环境变量
+通常我们不希望将生产环境的相关配置写在项目代码中，而希望在不同的环境中启动时自动读取环境中设置的配置；
 在本教程中，我也不希望将自己的数据库、缓存IP提交到代码仓库，所以可以使用环境变量+host；
 
 ### 安装组件
@@ -1481,14 +1566,15 @@ redis: {
 ```
 > 在生产环境中使用，你可以将环境变量配置到系统中，如果你是Docker启动，可以指定环境变量文件。
 
-## 部署
+## 十一、部署
+待续...
 ### 构建Docker镜像
 ### 使用Jenkins CI/CD
 ### 部署到阿里云云函数服务
 ### 部署到腾讯云云函数服务
 
 
-
+> 如果发现本文档有错误，请[点击这里](https://github.com/bestaone/midway-boot/edit/main/Tutorials.md)进行修改
 
 
 
