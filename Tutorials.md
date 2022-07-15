@@ -639,7 +639,7 @@ web中间件是在控制器调用`之前`和`之后`调用的函数方法，我�
 比如：统一返回格式、接口鉴权。
 
 ### 统一接口状态、异常码
-添加`src/common/ErrorCode.ts`。
+- 添加`src/common/ErrorCode.ts`;
 ```typescript
 // src/common/ErrorCode.ts
 export class ErrorCode {
@@ -661,6 +661,23 @@ export class ErrorCode {
   static BIZ_ERROR = 600000;
 }
 ```
+- 添加通用异常类`src/common/CommonException.ts`;
+```typescript
+// src/common/CommonException.ts
+import { MidwayError } from '@midwayjs/core';
+
+export class CommonException extends MidwayError {
+  code: number;
+  msg: string;
+  data: any;
+  constructor(code: number, msg: string) {
+    super(msg, code.toString());
+    this.code = code;
+    this.msg = msg;
+  }
+}
+```
+
 
 ### 使用中间件统一接口返回数据格式
 #### 添加中间件`src/middleware/format.middleware.ts`
@@ -1013,12 +1030,27 @@ export class Assert {
 }
 ```
 ### 添加JWT配置
-修改`src/config/config.default.ts`，添加如下内容：
+- 修改`src/config/config.default.ts`，添加如下内容；
 ```bash
 // src/config/config.default.ts
 jwt: {
   secret: 'setscrew',
   expiresIn: 60 * 60 * 24,
+}
+```
+- 添加`JWT`配置；
+```typescript
+// src/configuration.ts
+import * as jwt from '@midwayjs/jwt';
+
+@Configuration({
+  imports: [
+    jwt,
+    //...
+  ],
+})
+export class ContainerLifeCycle {
+    //...
 }
 ```
 
@@ -1039,6 +1071,22 @@ jwt: {
 }
 ```
 
+### 注册Redis组件
+```typescript
+// src/configuration.ts
+import * as redis from '@midwayjs/redis';
+
+@Configuration({
+  imports: [
+    redis,
+    // ...
+  ],
+})
+export class ContainerLifeCycle {
+    // ...
+}
+```
+
 ### 添加配置
 修改`src/config/config.default.ts`，添加如下内容：
 #### 添加Redis配置
@@ -1052,6 +1100,7 @@ redis: {
   },
 }
 ```
+
 #### 添加安全拦截配置
 ```bash
 app: {
@@ -1181,6 +1230,12 @@ export class SecurityMiddleware {
 > 但是有个缺点就是，不能人为控制分发出去的token失效。所以有时人们会使用缓存中的用户信息；
 > 这里使用了JWT+Redis的方式，是为了演示两种做法；
 
+#### 注册中间件
+```typescript
+// src/configuration.ts
+this.app.useMiddleware([SecurityMiddleware, FormatMiddleware, ReportMiddleware]);
+```
+
 #### 添加登陆接口
 - 添加DTO;
 ```typescript
@@ -1292,18 +1347,145 @@ export class CommonController {
 ```
 
 #### 使用Postman验证
-- 使用登陆接口获取token
 - 调用接口（未设置凭证）
+- 使用登陆接口获取token
 - 调用接口（使用凭证）
 
 ## Swagger集成
+Swagger是一个集成在系统内部，能够通过装饰类描述接口文档的工具，可以方便的测试接口
+
+### 安装组件
+```bash
+>npm install @midwayjs/swagger@3 --save
+>npm install swagger-ui-dist --save
+```
+
+### 注册组件
+```typescript
+// src/configuration.ts
+import * as swagger from '@midwayjs/swagger';
+
+@Configuration({
+  imports: [
+    swagger,
+    // ...
+  ],
+})
+export class ContainerLifeCycle {
+    // ...
+}
+```
+
+### 验证
+#### 访问：http://127.0.0.1:7001/swagger-ui/index.html；
+图5-1
+#### 验证接口，提示`缺少凭证`，需要Swagger支持`bearer`验证；
+图5-2
+
+- Swagger支持bearer验证，添加配置；
+```
+swagger: {
+  auth: {
+    authType: 'bearer',
+  },
+},
+```
+- 在对应Controller中添加注解`@ApiBearerAuth()`；
+```
+@ApiBearerAuth()
+@Controller('/api/user')
+export class UserController extends BaseController<User> {
+  // ...
+}
+```
+- 再访问Swagger，就出现了Authorize按钮；图5-3
+- 使用登陆接口，获取accessToken，进行认证，便可以访问相关接口了；
+  图5-4
+  图5-5
+  图5-6
+
+### Swagger常用装饰类
+- `@ApiTags()`通常用于`Controller`，将其分类标记；
+- `@ApiResponse()`用于标注API的返回值；
+- `@ApiProperty()`用于标注返回DTO、VO，实体类的属性；
+- 调整相关代码`common.controller.ts`、`user.controller.ts`、`user.ts`、`CommonDTO.ts`、`CommonVO.ts`、`BaseEntity.ts`；
+图5-7
+图5-8
 
 ## 环境变量
+通常我们不希望将生产环境的相关配置写在项目代码中，而希望在不同的环境中启动，自动读取环境中设置的配置；
+在本教程中，我也不希望将自己的数据库、缓存IP提交到代码仓库，所以可以使用环境变量+host；
+
+### 安装组件
+```bash
+npm install dotenv --save
+```
+
+### 初始化环境变量
+```typescript
+// src/configuration.ts
+import * as dotenv from 'dotenv';
+
+// 初始化环境变量
+dotenv.config();
+
+@Configuration({
+  imports: [
+      // ...
+  ]
+})
+export class ContainerLifeCycle {
+    // ...
+}
+```
+
+### 在根目录添加文件.env
+```
+// .env
+MYSQL_HOST=devserver
+MYSQL_USERNAME=dev
+MYSQL_PASSWORD=123456
+MYSQL_PORT=3306
+REDIS_HOST=devserver
+REDIS_PORT=6379
+```
+### 在host文件中添加域名映射
+```
+// windows电脑
+// C:\Windows\System32\drivers\etc\hosts
+// xx.xx.xx.xx 为你自己mysql、redis的ip，如果在一台机器上的话
+xx.xx.xx.xx devserver
+```
+
+### 使用环境变量
+```
+// src/config/config.default.ts
+orm: {
+  type: 'mysql',
+  host: process.env.MYSQL_HOST,
+  port: process.env.MYSQL_PORT,
+  username: process.env.MYSQL_USERNAME,
+  password: process.env.MYSQL_PASSWORD,
+  database: 'midway_boot',
+  synchronize: true, // 如果第一次使用，不存在表，有同步的需求可以写 true
+  logging: true,
+},
+// redis配置
+redis: {
+  client: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    db: 0,
+  },
+},
+```
+> 在生产环境中使用，你可以将环境变量配置到系统中，如果你是Docker启动，可以指定环境变量文件。
 
 ## 部署
-### 使用Docker部署
-### 使用阿里云函数服务部署
-### 使用腾讯云函数服务部署
+### 构建Docker镜像
+### 使用Jenkins CI/CD
+### 部署到阿里云云函数服务
+### 部署到腾讯云云函数服务
 
 
 
