@@ -1,0 +1,14 @@
+service:
+  name: midway_boot
+
+provider:
+  name: aliyun          # aliyun(cn-zhangjiakou)、tencent(ap-shanghai)
+  region: cn-zhangjiakou
+
+deployType:
+  type: koa
+  version: 3.0.0
+
+custom:
+  customDomain:
+    domainName: auto  # auto:需要使用自动域名
