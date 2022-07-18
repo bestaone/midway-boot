@@ -44,6 +44,13 @@ export default {
       authType: 'bearer',
     },
   },
+  // 跨域设置
+  cors: {
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+    credentials: true,
+    origin: (req) => req.headers.origin,
+  },
   // 日志配置
   midwayLogger: {
     clients: {
@@ -56,12 +63,5 @@ export default {
         consoleLevel: 'debug',
       },
     },
-  },
-  // 跨域设置
-  cors: {
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-    credentials: true,
-    origin: (req) => req.headers.origin,
   },
 } as MidwayConfig;

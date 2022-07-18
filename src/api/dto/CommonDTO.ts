@@ -1,6 +1,9 @@
 import { Rule, RuleType } from '@midwayjs/validate';
 import { ApiProperty } from '@midwayjs/swagger';
 
+/**
+ * 登陆DTO
+ */
 export class LoginDTO {
   @ApiProperty({ example: 'zhangsan', description: '用户名' })
   @Rule(RuleType.string().required().min(5).max(20))

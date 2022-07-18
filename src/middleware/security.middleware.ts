@@ -23,7 +23,7 @@ export class SecurityMiddleware {
   resolve() {
     return async (ctx: Context, next: NextFunction) => {
       if (!ctx.headers['authorization']) {
-        throw new httpError.UnauthorizedError('缺少凭证');
+        throw new httpError.UnauthorizedError('缺少访问凭证，请添加Header[Authorization=Bearer accessToken]');
       }
       const parts = ctx.get('authorization').trim().split(' ');
       if (parts.length !== 2) {

@@ -8,6 +8,9 @@ import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
 import { ErrorCode } from './ErrorCode';
 import { FindOptionsOrder } from 'typeorm/find-options/FindOptionsOrder';
 
+/**
+ * SERVICE的基类
+ */
 export abstract class BaseService<T extends BaseEntity> {
   @Inject()
   idGenerate: SnowflakeIdGenerate;

@@ -1,3 +1,6 @@
+/**
+ * 分页数据封装
+ */
 export class Page<T> {
   total: number;
   pageNo: number;

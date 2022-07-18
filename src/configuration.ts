@@ -21,11 +21,11 @@ dotenv.config();
 
 @Configuration({
   imports: [
-    crossDomain,
-    jwt,
-    swagger,
-    redis,
-    orm,
+    crossDomain,  // 支持跨域
+    jwt,          // 用于访问凭证签发时进行JWT编码
+    swagger,      // API接口工具
+    redis,        // 缓存
+    orm,          // 数据库操作
     koa,
     validate,
     {
@@ -44,7 +44,6 @@ export class ContainerLifeCycle {
 
   async onReady() {
     this.app.useMiddleware([SecurityMiddleware, FormatMiddleware, ReportMiddleware]);
-    // add filter
     this.app.useFilter([NotFoundFilter, DefaultErrorFilter]);
   }
 }
