@@ -1490,7 +1490,9 @@ export class UserController extends BaseController<User> {
 - `@ApiTags()`通常用于`Controller`，将其分类标记；
 - `@ApiResponse()`用于标注API的返回值；
 - `@ApiProperty()`用于标注返回DTO、VO，实体类的属性；
-- 调整相关代码`common.controller.ts`、`user.controller.ts`、`user.ts`、`CommonDTO.ts`、`CommonVO.ts`、`BaseEntity.ts`；
+
+### 调整相关代码
+`common.controller.ts`、`user.controller.ts`、`user.ts`、`CommonDTO.ts`、`CommonVO.ts`、`BaseEntity.ts`；
   <div align="center">
     <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/5-7.png">
   </div>
