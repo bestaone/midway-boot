@@ -15,15 +15,4 @@ export class LoginVO {
 /**
  * 去除密码，但是对应泛型不太适用
  */
-export class UserVO extends PickDto(User, [
-  'id',
-  'avatarUrl',
-  'username',
-  'phoneNum',
-  'regtime',
-  'updaterId',
-  'createrId',
-  'createTime',
-  'updateTime',
-  'status'
-]) {}
+export class UserVO extends PickDto(User, []) {}
