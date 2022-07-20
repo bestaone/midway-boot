@@ -1575,8 +1575,8 @@ redis: {
 待续...
 ### 构建Docker镜像
 ### 使用Jenkins CI/CD
-### 部署到阿里云云函数服务
-### 部署到腾讯云云函数服务
+### 部署到阿里云云函数Serverless服务
+### 部署到腾讯云云函数Serverless服务
 
 
 > 如果发现本文档有错误，请[点击这里](https://github.com/bestaone/midway-boot/edit/main/Tutorials.md)进行修改
