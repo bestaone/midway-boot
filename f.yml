@@ -4,6 +4,16 @@ service:
 provider:
   name: aliyun          # aliyun(cn-zhangjiakou)、tencent(ap-shanghai)
   region: cn-zhangjiakou
+  runtime: nodejs14
+  memorySize: 128
+  timeout: 5
+  environment:
+    MYSQL_HOST: devserver   # 需要修改
+    MYSQL_USERNAME: dev
+    MYSQL_PASSWORD: 123456
+    MYSQL_PORT: 3306
+    REDIS_HOST: devserver
+    REDIS_PORT: 6379
 
 deployType:
   type: koa
@@ -12,3 +22,10 @@ deployType:
 custom:
   customDomain:
     domainName: auto  # auto:需要使用自动域名
+
+functions:
+  apis:
+    handler: index.handler
+    events:
+      - http:
+          path: /*
