@@ -3,7 +3,7 @@
 midway是阿里巴巴开源的，基于TypeScript语言开发的Nodejs后端框架。
 本教程指导大家从0开始搭建一个midway项目。
 
-#### 其遵循遵循两种编程范式
+#### 其遵循两种编程范式
 - 面向对象（OOP + Class + IoC）；
 - 函数式（FP + Function + Hooks）；
 
