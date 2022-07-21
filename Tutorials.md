@@ -424,7 +424,7 @@ module.exports = {
 
 ### 开发调试
 
-### IntelliJ IDEA中Debug
+#### IntelliJ IDEA中Debug
 - 运行/调试配置
   <div align="center">
     <img width="800" src="https://earven.oss-cn-shanghai.aliyuncs.com/midway-boot/tutorials/1-1.png">
