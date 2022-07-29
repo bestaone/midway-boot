@@ -1,9 +1,8 @@
-import { EntityModel } from '@midwayjs/orm';
-import { Column } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 import { BaseEntity } from '../common/BaseEntity';
 import { ApiProperty } from '@midwayjs/swagger';
 
-@EntityModel('user')
+@Entity('user')
 export class User extends BaseEntity {
   @ApiProperty({ description: '头像' })
   @Column({ length: 100, nullable: true })

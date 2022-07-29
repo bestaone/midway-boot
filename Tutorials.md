@@ -100,13 +100,13 @@ module.exports = {
 TypeORM是Object Relation Mapping工具，提供的数据库操作能力。
 #### 安装依赖
 ```bash
->npm i @midwayjs/orm@3 typeorm --save
+>npm i @midwayjs/typeorm@3 typeorm --save
 ```
 安装完后`package.json`文件中会多出如下配置
 ```json
 {
   "dependencies": {
-    "@midwayjs/orm": "^3.3.6",
+    "@midwayjs/typeorm": "^3.4.4",
     "typeorm": "^0.3.7"
   }
 }
@@ -122,7 +122,7 @@ import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
 import { join } from 'path';
 import { ReportMiddleware } from './middleware/report.middleware';
-import * as orm from '@midwayjs/orm';
+import * as orm from '@midwayjs/typeorm';
 
 @Configuration({
   imports: [
@@ -158,15 +158,20 @@ export default {
     port: 7001,
   },
   // 添加orm配置
-  orm: {
-    type: 'mysql',
-    host: '127.0.0.1',      // 改成你的mysql数据库IP
-    port: 3306,             // 改成你的mysql数据库端口
-    username: 'root',       // 改成你的mysql数据库用户名（需要有创建表结构权限）
-    password: '123456',     // 改成你的mysql数据库密码
-    database: 'midway_boot',// 改成你的mysql数据库IP
-    synchronize: true,      // 如果第一次使用，不存在表，有同步的需求可以写 true
-    logging: true,
+  typeorm: {
+    dataSource: {
+      default: {
+        type: 'mysql',
+        host: '127.0.0.1',      // 改成你的mysql数据库IP
+        port: 3306,             // 改成你的mysql数据库端口
+        username: 'root',       // 改成你的mysql数据库用户名（需要有创建表结构权限）
+        password: '123456',     // 改成你的mysql数据库密码
+        database: 'midway_boot',// 改成你的mysql数据库IP
+        synchronize: true,      // 如果第一次使用，不存在表，有同步的需求可以写 true
+        logging: true,
+        entities: [User],
+      }
+    }
   },
 } as MidwayConfig;
 ```
@@ -192,7 +197,7 @@ export default {
 - 在该目录下创建实体类`user.ts`;
 ```typescript
 // src/entity/user.ts
-import { EntityModel } from '@midwayjs/orm';
+import { Entity } from '@midwayjs/typeorm';
 import {
   Column,
   CreateDateColumn,
@@ -200,7 +205,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@EntityModel('user')
+@Entity('user')
 export class User {
 
   @PrimaryColumn({ type: 'bigint' })
@@ -270,7 +275,7 @@ CREATE TABLE `user` (
 // src/service/user.service.ts
 import { Provide } from '@midwayjs/decorator';
 import { User } from '../eneity/user';
-import { InjectEntityModel } from '@midwayjs/orm';
+import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { DeleteResult } from 'typeorm/query-builder/result/DeleteResult';
 
@@ -483,11 +488,11 @@ export class BaseEntity {
 继承`BaseEntity`，并删除`user.ts`中的通用字段。
 ```typescript
 // src/entity/user.ts
-import { EntityModel } from '@midwayjs/orm';
+import { Entity } from '@midwayjs/typeorm';
 import { Column } from 'typeorm';
 import { BaseEntity } from '../common/BaseEntity';
 
-@EntityModel('user')
+@Entity('user')
 export class User extends BaseEntity {
   @Column({ length: 100, nullable: true })
   avatarUrl: string;
@@ -555,7 +560,7 @@ export abstract class BaseService<T extends BaseEntity> {
 ```typescript
 import { Provide } from '@midwayjs/decorator';
 import { User } from '../eneity/user';
-import { InjectEntityModel } from '@midwayjs/orm';
+import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseService } from '../common/BaseService';
 
@@ -767,7 +772,7 @@ import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
 import { join } from 'path';
 import { ReportMiddleware } from './middleware/report.middleware';
-import * as orm from '@midwayjs/orm';
+import * as orm from '@midwayjs/typeorm';
 import { FormatMiddleware } from './middleware/format.middleware';
 
 @Configuration({
@@ -845,7 +850,7 @@ import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
 import { join } from 'path';
 import { ReportMiddleware } from './middleware/report.middleware';
-import * as orm from '@midwayjs/orm';
+import * as orm from '@midwayjs/typeorm';
 import { FormatMiddleware } from './middleware/format.middleware';
 import { NotFoundFilter } from './filter/notfound.filter';
 import { DefaultErrorFilter } from './filter/default.filter';
@@ -1312,7 +1317,7 @@ export class LoginVO {
 ```typescript
 import { Provide } from '@midwayjs/decorator';
 import { User } from '../eneity/user';
-import { InjectEntityModel } from '@midwayjs/orm';
+import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseService } from '../common/BaseService';
 
@@ -1550,15 +1555,20 @@ xx.xx.xx.xx devserver
 ### 使用环境变量
 ```
 // src/config/config.default.ts
-orm: {
-  type: 'mysql',
-  host: process.env.MYSQL_HOST,
-  port: process.env.MYSQL_PORT,
-  username: process.env.MYSQL_USERNAME,
-  password: process.env.MYSQL_PASSWORD,
-  database: 'midway_boot',
-  synchronize: true, // 如果第一次使用，不存在表，有同步的需求可以写 true
-  logging: true,
+typeorm: {
+  dataSource: {
+    default: {
+      type: 'mysql',
+      host: process.env.MYSQL_HOST,
+      port: process.env.MYSQL_PORT,
+      username: process.env.MYSQL_USERNAME,
+      password: process.env.MYSQL_PASSWORD,
+      database: 'midway_boot',
+      synchronize: true, // 如果第一次使用，不存在表，有同步的需求可以写 true
+      logging: true,
+      entities: [User],
+    }
+  }
 },
 // redis配置
 redis: {

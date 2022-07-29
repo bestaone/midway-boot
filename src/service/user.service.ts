@@ -1,5 +1,5 @@
 import { Provide } from '@midwayjs/decorator';
-import { InjectEntityModel } from '@midwayjs/orm';
+import { InjectEntityModel } from '@midwayjs/typeorm';
 import { User } from '../entity/user';
 import { Repository } from 'typeorm';
 import { BaseService } from '../common/BaseService';

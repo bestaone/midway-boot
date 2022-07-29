@@ -1,4 +1,5 @@
 import { MidwayConfig } from '@midwayjs/core';
+import {User} from '../entity/user'
 
 export default {
   // use for cookie sign key, should change to your own and keep security
@@ -13,15 +14,20 @@ export default {
     port: 7001,
   },
   // ORM和数据库配置
-  orm: {
-    type: 'mysql',
-    host: process.env.MYSQL_HOST,
-    port: process.env.MYSQL_PORT,
-    username: process.env.MYSQL_USERNAME,
-    password: process.env.MYSQL_PASSWORD,
-    database: 'midway_boot',
-    synchronize: true, // 如果第一次使用，不存在表，有同步的需求可以写 true
-    logging: true,
+  typeorm: {
+    dataSource: {
+      default: {
+        type: 'mysql',
+        host: process.env.MYSQL_HOST,
+        port: process.env.MYSQL_PORT,
+        username: process.env.MYSQL_USERNAME,
+        password: process.env.MYSQL_PASSWORD,
+        database: 'midway_boot',
+        synchronize: true, // 如果第一次使用，不存在表，有同步的需求可以写 true
+        logging: true,
+        entities: [User],
+      }
+    }
   },
   // redis配置
   redis: {
