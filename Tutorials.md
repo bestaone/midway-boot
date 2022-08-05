@@ -1507,6 +1507,26 @@ export class UserController extends BaseController<User> {
 
 > 关于Swagger的详细使用文档，见：http://www.midwayjs.org/docs/extensions/swagger
 
+### 使用Swagger Knife4j2
+
+- 安装
+```bash
+>npm install midwayjs-kinfe4j2 --save
+```
+
+- 依赖
+```
+@midwayjs/swagger": "^3.3.14
+midwayjs-kinfe4j2": "^0.0.2
+```
+
+- 修改导入
+```
+import ??? from '@midwayjs/swagger';
+改为
+import ??? from 'midwayjs-knife4j2';
+```
+
 ## 十、环境变量
 通常我们不希望将生产环境的相关配置写在项目代码中，而希望在不同的环境中启动时自动读取环境中设置的配置；
 在本教程中，我也不希望将自己的数据库、缓存IP提交到代码仓库，所以可以使用环境变量+host；
