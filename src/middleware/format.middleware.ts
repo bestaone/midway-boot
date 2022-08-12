@@ -14,7 +14,8 @@ export class FormatMiddleware implements IMiddleware<Context, NextFunction> {
   resolve() {
     return async (ctx: Context, next: NextFunction) => {
       const result = await next();
-      return { code: ErrorCode.OK, msg: 'OK', data: result };
+      ctx.response.status = 200;
+      return result!=null ? { code: ErrorCode.OK, msg: 'OK', data: result } : { code: ErrorCode.OK, msg: 'OK' };
     };
   }
 
