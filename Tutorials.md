@@ -1602,21 +1602,300 @@ redis: {
 > 在生产环境中使用，你可以将环境变量配置到系统中，如果你是Docker启动，可以指定环境变量文件。
 
 ## 十一、部署
-待续...
 ### 构建Docker镜像
+
+#### 什么shiDocker
+Docker是基于Go语言进行开发实现，一个开源的应用容器引擎。
+
+#### 为什么要用Docker
+- 可以使用镜像快速构建一套标准的开发环境，快速部署代码；
+- 高效的资源利用，可以实现更高的性能，同时对资源的额外需求很低；
+- 兼容性高，让用户可以在不同平台间轻松的迁移应用；
+- 可以实现自动化且高效的容器管理。
+
+#### 如何构建Docker
+在项目根目录中添加Dockerfile构建配置文件；
+```bash
+FROM node:16.14.2-alpine
+WORKDIR /app
+ENV TZ="Asia/Shanghai"
+
+COPY . .
+
+RUN npm install --registry=https://registry.npm.taobao.org
+RUN npm run build
+# 移除开发环境的依赖
+RUN npm prune --production
+
+# 暴露端口（内部）
+EXPOSE 7001
+
+# 设定容器启动时第一个运行的命令及其参数
+ENTRYPOINT ["npm", "run", "start"]
+```
+
 ### 使用Jenkins CI/CD
+Jenkins是一个基于java开发的一个开呀的自动化工具，它能够帮我们快速的完成测试、编译、构建、打包、发布等一系列部署任务；
+
+#### 安装配置Jenkins
+可以网上查找下安装配置方法，这里不赘述了。
+
+#### 编写部署脚本 /opt/services/deploy.sh
+```bash
+#!/bin/sh
+
+#./deploy.sh -n hi-mall -v 1.0 -R hiauth -p 8182:8182
+
+url='bestaone'
+
+name=""
+version="1.0"
+registry="hlll"
+portMapping=""
+opts=""
+envFile=""
+
+function useage () {
+     echo "Usage: -n name -v version -p portMapping [-R registry] [-e envFile] [-o opts]"
+     echo "-n name, app name"
+     echo "-v version, deploy image version"
+     echo "-p portMapping, container port mapping"
+     echo "-R registry, image registry"
+     echo "-e envFile, Env File"
+     echo "-o opts, JVM OPST"
+     exit 1
+}
+
+while getopts "h:n:v:R:V:p:N:e:o:P:" option
+do
+    case "${option}" in
+        n)
+            name=${OPTARG} ;;
+        v)
+            version=${OPTARG} ;;
+                p)
+            portMapping+=" -p "${OPTARG} ;;
+        R)
+            registry=${OPTARG} ;;
+                e)
+            envFile=${OPTARG} ;;
+        o)
+            opts=${OPTARG} ;;
+        \?)
+            useage ;;
+    esac
+done
+
+if [ "${name}" == "" ] ; then
+        useage ;
+fi
+
+if [ "${portMapping}" == "" ] ; then
+        useage ;
+fi
+
+echo "--------------------------------------------------------------------------"
+
+echo "Name              = ${name}"
+echo "Version           = ${version}"
+echo "Opts              = ${opts}"
+echo "Registry          = ${registry}"
+echo "PortMapping       = ${portMapping}"
+echo "EnvFile           = ${envFile}"
+
+runcommand=""
+
+echo "Deploy ${name}:${version}"
+
+echo "step 1 : shoutdown and remove container"
+docker ps -a --filter "name=$name" | awk '{print $1}'| while read cid
+do
+        if [ $cid != 'CONTAINER' ];then
+                echo docker rm -f $cid
+                docker rm -f $cid
+        fi
+done
+
+echo "step 2 : remove image"
+echo docker rmi $url/$registry/$name:$version
+docker rmi $url/$registry/$name:$version
+
+echo "step 3 : build new image"
+echo docker build -t $url/$registry/$name:$version /opt/services/$name
+docker build -t $url/$registry/$name:$version /opt/services/$name
+
+echo "step 4 : run container"
+
+if [ "${name}" != "" ] ; then
+        runcommand="${runcommand} --name ${name} "
+fi
+
+if [ "${portMapping}" != "" ] ; then
+        runcommand="${runcommand} ${portMapping} "
+fi
+
+if [ "${volume}" != "" ] ; then
+        runcommand="${runcommand} -v ${volume} "
+fi
+
+if [ "${envFile}" != "" ] ; then
+        runcommand="${runcommand} --env-file ${envFile} "
+fi
+
+if [ "${opts}" != "" ] ; then
+        runcommand="${runcommand} -e 'JAVA_OPTS=${opts}' "
+fi
+
+echo docker run -d $runcommand $url/$registry/$name:$version
+docker run -d $runcommand $url/$registry/$name:$version
+
+echo "step 5 : check deploy"
+echo docker images
+docker images
+echo docker ps -a
+docker ps -a
+
+echo "${name}:${version} deploy over!"
+```
+
+#### 创建Jenkins任务
+添加一个自由风格的任务，添加好源码地址（git），然后添加执行shell。
+```bash
+# 切换目录
+cd /root/.jenkins/workspace/midway-boot
+# 删除旧文件
+rm -rf /opt/services/midway-boot/*
+# 复制新文件
+cp -rf /root/.jenkins/workspace/midway-boot/* 	/opt/services/midway-boot/
+
+# 发布
+/opt/services/deploy.sh -n midway-boot -R midway -p 10100:7001 -e /opt/services/.env
+```
+> 在这之前需要先创建目录 /opt/services/midway-boot，以及添加环境变量配置文件 /opt/services/.env
+
+#### 测试
+等Jenkins构建任务之心完成之后，我们可以输入主机地址（域名或IP）进行访问了
+
 ### 部署到阿里云云函数Serverless服务
+
+#### 添加函数定义文件 f.yml
+```yaml
+service:
+  name: midway_boot
+
+provider:
+  name: aliyun              # aliyun(cn-zhangjiakou)、tencent(ap-shanghai)
+  region: cn-zhangjiakou
+  runtime: nodejs14
+  memorySize: 128
+  timeout: 5
+  environment:
+    MYSQL_HOST: devserver   # 需要修改
+    MYSQL_USERNAME: root
+    MYSQL_PASSWORD: 123456
+    MYSQL_PORT: 3306
+    REDIS_HOST: devserver
+    REDIS_PORT: 6379
+
+deployType:
+  type: koa
+  version: 3.0.0
+
+custom:
+  customDomain:
+    domainName: auto        # auto:需要使用自动域名
+
+functions:
+  apis:
+    handler: index.handler
+    events:
+      - http:
+          path: /*
+
+```
+
+#### 添加启动文件 app.js
+在项目根目录下添加启动文件app.js
+```typescript
+const WebFramework = require('@midwayjs/koa').Framework;
+const { Bootstrap } = require('@midwayjs/bootstrap');
+
+/**
+ * serverless 部署是需要 添加此启动文件
+ */
+module.exports = async () => {
+  console.log('启动服务');
+  // 加载框架并执行
+  await Bootstrap.run();
+  // 获取依赖注入容器
+  const container = Bootstrap.getApplicationContext();
+  // 获取 koa framework
+  const framework = container.get(WebFramework);
+  // 返回 app 对象
+  return framework.getApplication();
+};
+
+```
+
+#### 发布
+```bash
+npm run deploy
+```
+
+控制台输出：
+```bash
+Install production dependencies...
+ - Dependencies install complete
+Package artifact...
+ - Artifact file serverless.zip
+There is auto config in the service: midway_boot
+
+Auto Domain: http://app-index.midway-boot.1480563473081285.cn-zhangjiakou.fc.devsapp.net/
+
+Function 'app_index' deploy success
+```
+> http://app-index.midway-boot.1480563473081285.cn-zhangjiakou.fc.devsapp.net 就是对应的服务地址
+
+> 时间较长，观察命令行输出，耐心等待会。
+
+#### 配置
+第一次执行需要配置云平台账号，如果没有出现配置提示，可以主动执行：
+```bash
+npx midway-bin deploy --resetConfig
+```
+> 如何配置，请参考：[点击这里](https://github.com/bestaone/midway-boot/edit/main/Tutorials.md)
+
+#### 验证
+访问：https://app-index.midway-boot.1480563473081285.cn-zhangjiakou.fc.devsapp.net/swagger-ui/index.html
+
+#### 绑定域名
+- 注册一个自己的域名；
+- 配置一个CNAME类型域名，绑定到阿里云自动分配的域名；
+- 到阿里云的“函数计算 FC”-“域名管理”页面中配置，按提示配置；
+
 ### 部署到腾讯云云函数Serverless服务
 
+#### 修改配置 f.yml
+```bash
+provider:
+  name: aliyun
+  region: cn-zhangjiakou
 
-> 如果发现本文档有错误，请[点击这里](https://github.com/bestaone/midway-boot/edit/main/Tutorials.md)进行修改
+# 改为
 
+provider:
+  name: tencent
+  region: ap-shanghai
+```
 
+#### 发布
+```bash
+npm run deploy
+```
 
+#### 授权
+控制台会输出二维码，使用微信扫码授权。
 
-
-
-
-
-
+#### 测试
+使用控制台输入的域名进行测试。
 

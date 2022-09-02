@@ -19,7 +19,7 @@ export default {
       default: {
         type: 'mysql',
         host: process.env.MYSQL_HOST,
-        port: process.env.MYSQL_PORT,
+        port: 3306,
         username: process.env.MYSQL_USERNAME,
         password: process.env.MYSQL_PASSWORD,
         database: 'midway_boot',
@@ -69,5 +69,5 @@ export default {
         consoleLevel: 'debug',
       },
     },
-  },
+  }
 } as MidwayConfig;
